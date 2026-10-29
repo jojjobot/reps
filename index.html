@@ -101,8 +101,25 @@
   }
   .range button.on { color: var(--text); border-color: var(--accent); }
   canvas { width: 100%; height: 190px; display: block; }
-  #chart, #when { cursor: zoom-in; }
-  .expand { color: var(--dim); font-size: 12px; margin-top: 6px; }
+  #chart, #when, #bigCanvas { cursor: pointer; }
+  #when { height: 240px; }
+  .head-right { display: flex; gap: 6px; align-items: center; }
+  .expand-btn {
+    width: 32px; height: 28px; border: 1px solid var(--line); background: transparent; color: var(--text);
+    border-radius: 8px; font-size: 16px; line-height: 1; cursor: pointer;
+  }
+  .pick { margin-top: 8px; min-height: 22px; font-size: 14px; color: var(--dim); font-variant-numeric: tabular-nums; }
+  .pick b { color: var(--text); }
+  .usual-box:empty { display: none; }
+  .usual-box { margin-top: 10px; border-top: 1px solid var(--line); padding-top: 10px; font-size: 14px; color: var(--dim); }
+  .usual { display: flex; gap: 8px; align-items: baseline; margin-bottom: 6px; }
+  .usual i { flex: none; width: 10px; height: 10px; border-radius: 50%; }
+  .usual b { color: var(--text); font-size: 17px; font-variant-numeric: tabular-nums; }
+  .usual .drift { color: var(--good); }
+  .usual-best { margin-top: 6px; }
+  .usual-best b { color: var(--gold); }
+  .big .usual-box { max-height: 32vh; overflow: auto; }
+  @media (orientation: landscape) and (max-height: 520px) { .big .usual-box { display: none; } }
 
   .big {
     position: fixed; inset: 0; z-index: 10; background: var(--bg); display: none; flex-direction: column;
@@ -139,7 +156,7 @@
   .toast {
     position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom)); transform: translate(-50%, 30px);
     background: var(--good); color: #002010; font-weight: 800; padding: 12px 20px; border-radius: 999px;
-    opacity: 0; transition: 0.25s; pointer-events: none; white-space: nowrap;
+    opacity: 0; transition: 0.25s; pointer-events: none; white-space: nowrap; z-index: 30;
   }
   .toast.show { opacity: 1; transform: translate(-50%, 0); }
 </style>
@@ -184,10 +201,13 @@
 <section class="card">
   <div class="chart-head">
     <div class="label">Progress</div>
-    <div class="range" id="range">
-      <button data-days="7">7d</button>
-      <button data-days="30" class="on">30d</button>
-      <button data-days="90">90d</button>
+    <div class="head-right">
+      <div class="range" id="range">
+        <button data-days="7">7d</button>
+        <button data-days="30" class="on">30d</button>
+        <button data-days="90">90d</button>
+      </div>
+      <button class="expand-btn" data-big="chart" aria-label="Full screen">⤢</button>
     </div>
   </div>
   <canvas id="chart"></canvas>
@@ -196,18 +216,23 @@
     <span><i style="background:var(--gold)"></i>best</span>
     <span><i style="background:var(--good)"></i>7-day average</span>
   </div>
-  <div class="expand">⤢ Tap the graph to see it full screen</div>
+  <div class="pick" id="chartPick"></div>
 </section>
 
 <section class="card">
-  <div class="label" style="margin-bottom:8px">Every set, when you did it</div>
+  <div class="chart-head">
+    <div class="label">When you train</div>
+    <button class="expand-btn" data-big="when" aria-label="Full screen">⤢</button>
+  </div>
   <canvas id="when"></canvas>
   <div class="legend">
-    <span><i style="background:#ffb347"></i>morning</span>
-    <span><i style="background:var(--accent)"></i>afternoon</span>
-    <span><i style="background:#b388ff"></i>evening</span>
+    <span><i style="background:#ffb347;border-radius:50%"></i>morning</span>
+    <span><i style="background:#00e5ff;border-radius:50%"></i>afternoon</span>
+    <span><i style="background:#b388ff;border-radius:50%"></i>evening</span>
   </div>
-  <div class="expand">⤢ Tap the graph to see it full screen, then tap a dot to see that set</div>
+  <div class="legend">Bigger dot = more reps · dashed line = your average time</div>
+  <div class="pick" id="whenPick"></div>
+  <div class="usual-box" id="whenSummary"></div>
 </section>
 
 <section class="card">
@@ -234,9 +259,10 @@
     <button data-days="7">7d</button>
     <button data-days="30">30d</button>
     <button data-days="90">90d</button>
-    <span class="hint" id="bigHint" style="margin-left:8px"></span>
   </div>
   <canvas id="bigCanvas"></canvas>
+  <div class="pick" id="bigPick"></div>
+  <div class="usual-box" id="bigSummary"></div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -348,6 +374,9 @@ function render() {
   document.querySelectorAll('#range button').forEach(b => b.classList.toggle('on', +b.dataset.days === days))
   drawChart(ex)
   drawWhen(ex)
+  $('chartPick').innerHTML = pickText('chart')
+  $('whenPick').innerHTML = pickText('when')
+  $('whenSummary').innerHTML = whenSummary(ex)
 }
 
 function drawChart(ex, c = $('chart')) {
@@ -376,8 +405,9 @@ function drawChart(ex, c = $('chart')) {
     g.textAlign = 'right'; g.fillText(v, padL - 5, y + 4)
   }
 
-  // Bars
+  // Bars (kept on the canvas for tapping; the tapped day is outlined in white)
   const slot = cw / days, bw = Math.max(2, slot * 0.7)
+  c.hits = keys.map((k, i) => ({ x0: padL + i * slot, x1: padL + (i + 1) * slot, key: k, v: vals[i] }))
   vals.forEach((v, i) => {
     if (!v) return
     const bh = ch * v / top
@@ -386,6 +416,7 @@ function drawChart(ex, c = $('chart')) {
     g.beginPath()
     g.roundRect ? g.roundRect(x, padT + ch - bh, bw, bh, Math.min(4, bw / 2)) : g.rect(x, padT + ch - bh, bw, bh)
     g.fill()
+    if (keys[i] === picked.chart) { g.strokeStyle = '#fff'; g.lineWidth = 2; g.stroke() }
   })
 
   // 7-day average line (only over days you could have trained)
@@ -407,8 +438,49 @@ function drawChart(ex, c = $('chart')) {
   g.textAlign = 'right'; g.fillText('today', w, h - 4)
 }
 
-// The timeline: x = the real date and time, y = reps in that set. Dots are kept on the canvas for tapping.
-const partOfDay = t => { const h = new Date(t).getHours(); return h < 12 ? '#ffb347' : h < 18 ? null : '#b388ff' }
+// --- "When you train": x = the day, y = the time of day (morning at the top), dot size = reps ---
+// Sets are grouped into the times you usually train (a gap of 2.5 h or more starts a new group), so a
+// morning and an afternoon routine get an average each instead of one meaningless midday average. Each
+// group's dashed line is its average time over the 7 days up to each day, so drift shows over the weeks.
+const PART = [
+  { name: 'morning', until: 12 * 60, colour: '#ffb347' },
+  { name: 'afternoon', until: 18 * 60, colour: '#00e5ff' },
+  { name: 'evening', until: 24 * 60, colour: '#b388ff' },
+]
+const GROUP_GAP = 150   // minutes
+const minuteOf = t => { const d = new Date(t); return d.getHours() * 60 + d.getMinutes() }
+const partOf = m => PART.find(p => m < p.until) || PART[2]
+const hhmm = m => clock(new Date(2000, 0, 1, 0, Math.round(m)).getTime())
+const longDay = k => new Date(k + 'T12:00:00').toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' })
+const rangeKeys = () => Array.from({ length: days }, (_, i) => shift(today(), i - days + 1))
+
+function setsInRange(ex) {
+  const out = []
+  for (const k of rangeKeys()) for (const s of setsOn(k, ex.id)) if (s.t) out.push({ ...s, key: k, m: minuteOf(s.t) })
+  return out
+}
+
+function trainingTimes(sets) {
+  const groups = []
+  for (const s of sets.slice().sort((a, b) => a.m - b.m)) {
+    const g = groups[groups.length - 1]
+    if (g && s.m - g.sets[g.sets.length - 1].m < GROUP_GAP) g.sets.push(s)
+    else groups.push({ sets: [s] })
+  }
+  const mean = list => list.reduce((a, s) => a + s.m, 0) / list.length
+  for (const g of groups) {
+    const n = g.sets.length
+    g.avg = mean(g.sets)
+    g.reps = g.sets.reduce((a, s) => a + s.n, 0) / n
+    g.part = partOf(g.avg)
+    g.days = new Set(g.sets.map(s => s.key)).size
+    // Earlier or later than at first: the older half of its sets against the newer half.
+    const byDate = g.sets.slice().sort((a, b) => a.t - b.t), half = Math.floor(n / 2)
+    g.drift = half >= 3 ? mean(byDate.slice(n - half)) - mean(byDate.slice(0, half)) : 0
+    for (const s of g.sets) s.group = g
+  }
+  return groups
+}
 
 function drawWhen(ex, c = $('when')) {
   const dpr = window.devicePixelRatio || 1
@@ -419,57 +491,175 @@ function drawWhen(ex, c = $('when')) {
   g.clearRect(0, 0, w, h)
   const css = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim()
 
-  const startKey = shift(today(), -days + 1)
-  const from = new Date(startKey + 'T00:00:00').getTime()
-  const to = new Date(shift(today(), 1) + 'T00:00:00').getTime()
-  const sets = []
-  for (let k = startKey; k <= today(); k = shift(k, 1)) for (const s of setsOn(k, ex.id)) if (s.t) sets.push(s)
-  const top = Math.max(10, ...sets.map(s => s.n)) * 1.15
-  const padL = 30, padB = 18, padT = 6
-  const cw = w - padL - 4, ch = h - padB - padT
-  const X = t => padL + cw * (t - from) / (to - from)
-  const Y = n => padT + ch - ch * n / top
+  const keys = rangeKeys()
+  const col = Object.fromEntries(keys.map((k, i) => [k, i]))
+  const sets = setsInRange(ex)
+  const groups = trainingTimes(sets)
+
+  // The time axis fits your sets in whole hours, at least 6 h tall (06:00-22:00 before there is anything).
+  let lo = sets.length ? Math.min(...sets.map(s => s.m)) - 45 : 6 * 60
+  let hi = sets.length ? Math.max(...sets.map(s => s.m)) + 45 : 22 * 60
+  if (hi - lo < 360) { const mid = (lo + hi) / 2; lo = mid - 180; hi = mid + 180 }
+  lo = Math.max(0, Math.floor(lo / 60) * 60); hi = Math.min(24 * 60, Math.ceil(hi / 60) * 60)
+  const step = hi - lo <= 480 ? 60 : hi - lo <= 900 ? 120 : 180
+  const ticks = []
+  for (let m = Math.ceil(lo / step) * step; m <= hi; m += step) ticks.push(m)
 
   g.font = '11px system-ui, sans-serif'
+  const padL = Math.max(...ticks.map(m => g.measureText(hhmm(m)).width)) + 8
+  const padT = 8, padB = 18, padR = 6
+  const cw = w - padL - padR, ch = h - padT - padB
+  const slot = cw / days
+  const X = k => padL + slot * (col[k] + 0.5)
+  const Y = m => padT + ch * (m - lo) / (hi - lo)
+
+  // Hour lines, then a line + date under each day (7d) or each Monday.
   g.strokeStyle = css('--line'); g.fillStyle = css('--dim'); g.lineWidth = 1
-  for (let i = 0; i <= 3; i++) {
-    const v = Math.round(top * i / 3), y = Y(top * i / 3)
-    g.beginPath(); g.moveTo(padL, y + 0.5); g.lineTo(w, y + 0.5); g.stroke()
-    g.textAlign = 'right'; g.fillText(v, padL - 5, y + 4)
+  g.textAlign = 'right'
+  for (const m of ticks) {
+    const y = Math.round(Y(m)) + 0.5
+    g.beginPath(); g.moveTo(padL, y); g.lineTo(w - padR, y); g.stroke()
+    g.fillText(hhmm(m), padL - 6, y + 4)
   }
-  // A faint line at each midnight (each Monday on the long ranges), labelled underneath.
-  const every = days <= 7 ? 1 : 7
   g.textAlign = 'center'
-  for (let k = startKey; k <= today(); k = shift(k, 1)) {
-    const d = new Date(k + 'T00:00:00')
-    if (every === 7 && d.getDay() !== 1) continue
-    const x = X(d.getTime())
-    g.strokeStyle = css('--line'); g.beginPath(); g.moveTo(x + 0.5, padT); g.lineTo(x + 0.5, padT + ch); g.stroke()
+  keys.forEach((k, i) => {
+    const d = new Date(k + 'T12:00:00')
+    if (days > 7 && d.getDay() !== 1) return
+    const x = Math.round(padL + slot * i) + 0.5
+    g.globalAlpha = 0.5; g.beginPath(); g.moveTo(x, padT); g.lineTo(x, padT + ch); g.stroke(); g.globalAlpha = 1
     const label = days <= 7 ? d.toLocaleDateString(undefined, { weekday: 'short' }) : d.toLocaleDateString(undefined, { day: 'numeric', month: 'short' })
-    if (x > padL + 12 && x < w - 12) g.fillText(label, x, h - 4)
+    const lx = days <= 7 ? X(k) : x
+    if (lx > padL + 14 && lx < w - 16) g.fillText(label, lx, h - 4)
+  })
+
+  if (!sets.length) {
+    c.hits = []
+    g.fillStyle = css('--dim')
+    g.fillText('Your sets will appear here as you log them', padL + cw / 2, padT + ch / 2)
+    return
   }
 
-  c.dots = sets.map(s => ({ x: X(s.t), y: Y(s.n), s }))
-  for (const d of c.dots) {
-    const col = partOfDay(d.s.t) || css('--accent')
-    g.strokeStyle = col; g.globalAlpha = 0.45; g.lineWidth = 2
-    g.beginPath(); g.moveTo(d.x, Y(0)); g.lineTo(d.x, d.y); g.stroke()
-    g.globalAlpha = 1; g.fillStyle = col
-    g.beginPath(); g.arc(d.x, d.y, days > 30 ? 3 : 4.5, 0, Math.PI * 2); g.fill()
+  // Each group's average time over the 7 days up to each day (dashed), labelled at its end.
+  g.setLineDash([5, 4]); g.lineWidth = 2
+  const labels = []
+  for (const grp of groups) {
+    if (grp.sets.length < 3) continue
+    g.strokeStyle = grp.part.colour; g.globalAlpha = 0.8; g.beginPath()
+    let last = null
+    keys.forEach((k, i) => {
+      const near = grp.sets.filter(s => col[s.key] <= i && col[s.key] > i - 7)
+      if (!near.length) { last = null; return }
+      const y = Y(near.reduce((a, s) => a + s.m, 0) / near.length)
+      if (last) g.lineTo(X(k), y); else g.moveTo(X(k), y)
+      last = { x: X(k), y }
+    })
+    g.stroke()
+    if (last) labels.push({ x: last.x, y: last.y, text: 'avg ' + hhmm(grp.avg), colour: grp.part.colour })
   }
-  if (!sets.length) {
-    g.fillStyle = css('--dim'); g.textAlign = 'center'
-    g.fillText('Your sets will appear here as you log them', padL + cw / 2, padT + ch / 2)
+  g.setLineDash([]); g.globalAlpha = 1
+
+  // The dots: your smallest set in view is the smallest dot, your biggest the biggest (area grows with
+  // reps) - scaled from zero, 30 reps and 44 came out nearly the same size.
+  const most = Math.max(...sets.map(s => s.n)), least = Math.min(...sets.map(s => s.n))
+  const rMax = Math.min(13, Math.max(5, slot * 0.9)), rMin = Math.max(2.5, rMax * 0.3)
+  const share = n => most > least ? (n - least) / (most - least) : 1
+  c.hits = sets.map(s => ({ x: X(s.key), y: Y(s.m), r: rMin + (rMax - rMin) * Math.sqrt(share(s.n)), t: s.t, s }))
+  for (const d of c.hits.slice().sort((a, b) => b.r - a.r)) {
+    g.fillStyle = partOf(d.s.m).colour; g.globalAlpha = 0.85
+    g.beginPath(); g.arc(d.x, d.y, d.r, 0, Math.PI * 2); g.fill()
+  }
+  g.globalAlpha = 1
+
+  // Average labels on a dark tag so dots never hide them.
+  g.font = 'bold 11px system-ui, sans-serif'
+  for (const l of labels) {
+    const tw = g.measureText(l.text).width + 10
+    const x = Math.min(w - padR - tw, Math.max(padL, l.x - tw / 2)), y = Math.max(padT, l.y - 22)
+    g.fillStyle = css('--bg'); g.globalAlpha = 0.85
+    g.beginPath(); g.roundRect ? g.roundRect(x, y, tw, 16, 5) : g.rect(x, y, tw, 16); g.fill()
+    g.globalAlpha = 1; g.fillStyle = l.colour; g.textAlign = 'left'
+    g.fillText(l.text, x + 5, y + 12)
+  }
+
+  // The tapped set: a white ring.
+  const p = c.hits.find(d => d.t === picked.when)
+  if (p) {
+    g.strokeStyle = '#fff'; g.lineWidth = 2.5
+    g.beginPath(); g.arc(p.x, p.y, p.r + 4, 0, Math.PI * 2); g.stroke()
   }
 }
 
-// --- Full screen: tap a graph and it fills the screen (turn the phone sideways for more room) ---
+// The words under the "When you train" graph: your usual times, and when you are strongest.
+function whenSummary(ex) {
+  const sets = setsInRange(ex)
+  if (!sets.length) return ''
+  const groups = trainingTimes(sets)
+  const usual = groups.filter(g => g.sets.length >= 2).sort((a, b) => b.sets.length - a.sets.length).slice(0, 3).sort((a, b) => a.avg - b.avg)
+  const span = days === 7 ? 'last 7 days' : `last ${days} days`
+  let html = `<div class="label" style="margin-bottom:8px">Your usual times · ${span}</div>`
+  if (!usual.length) return html + '<div class="usual-best">Log a few more sets to see your usual times.</div>'
+  html += usual.map(g => {
+    const drift = Math.abs(g.drift) >= 10
+      ? ` · <span class="drift">${Math.round(Math.abs(g.drift))} min ${g.drift < 0 ? 'earlier' : 'later'} than at first</span>` : ''
+    return `<div class="usual"><i style="background:${g.part.colour}"></i><div><b>${hhmm(g.avg)}</b> ${g.part.name}` +
+      ` · ${g.sets.length} sets on ${g.days} ${g.days === 1 ? 'day' : 'days'} · avg ${fmt(Math.round(g.reps))} ${ex.unit}${drift}</div></div>`
+  }).join('')
+
+  // Strongest part of the day: the most reps per set, among parts with at least 3 sets.
+  const parts = PART.map(p => {
+    const mine = sets.filter(s => partOf(s.m) === p)
+    return { p, n: mine.length, avg: mine.reduce((a, s) => a + s.n, 0) / (mine.length || 1) }
+  }).filter(x => x.n >= 3).sort((a, b) => b.avg - a.avg)
+  if (parts.length >= 2 && parts[0].avg - parts[1].avg >= 1) {
+    html += `<div class="usual-best">You are strongest in the <b>${parts[0].p.name}</b>: avg ${fmt(Math.round(parts[0].avg))} ${ex.unit} a set,` +
+      ` against ${fmt(Math.round(parts[1].avg))} in the ${parts[1].p.name}.</div>`
+  }
+  return html
+}
+
+// --- Tapping a graph: the tapped bar (a day) or dot (a set) is marked and described under the graph ---
+const picked = { chart: null, when: null }   // chart: a day key, when: a set's timestamp
+
+function pickText(which) {
+  const ex = current()
+  if (which === 'chart') {
+    const k = picked.chart
+    if (!k || !totalOn(k, ex.id)) return 'Tap a bar to see that day'
+    const sets = setsOn(k, ex.id)
+    const parts = sets.map(s => (s.t ? clock(s.t) + ' · ' : '') + fmt(s.n)).join('&nbsp;&nbsp; ')
+    return `<b>${longDay(k)} · ${fmt(totalOn(k, ex.id))} ${ex.unit}</b><br>${parts}`
+  }
+  const t = picked.when
+  const s = t && setsOn(dayKey(new Date(t)), ex.id).find(s => s.t === t)
+  if (!s) return 'Tap a dot to see that set'
+  return `<b>${longDay(dayKey(new Date(t)))}, ${clock(t)} · ${fmt(s.n)} ${ex.unit}</b>`
+}
+
+function tapGraph(c, which, e) {
+  if (!c.hits) return
+  const r = c.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top
+  let hit = null
+  if (which === 'chart') hit = c.hits.find(b => x >= b.x0 && x < b.x1 && b.v > 0)
+  else {
+    // The nearest dot within a finger's reach of its edge.
+    let dist = 28
+    for (const d of c.hits) { const dd = Math.hypot(d.x - x, d.y - y) - d.r; if (dd < dist) { dist = dd; hit = d } }
+  }
+  picked[which] = hit ? (which === 'chart' ? hit.key : hit.t) : null
+  if (hit && navigator.vibrate) navigator.vibrate(10)
+  render(); drawBig()
+}
+
+// --- Full screen: the ⤢ button (turn the phone sideways for more room) ---
 let big = null   // 'chart' | 'when' | null
-const BIG_TITLE = { chart: 'Progress', when: 'Every set, when you did it' }
+const BIG_TITLE = { chart: 'Progress', when: 'When you train' }
 
 function drawBig() {
   if (!big) return
   const c = $('bigCanvas')
+  // Words first: they change how tall the graph's space is, and a canvas sized before that gets stretched.
+  $('bigPick').innerHTML = pickText(big)
+  $('bigSummary').innerHTML = big === 'when' ? whenSummary(current()) : ''
   if (big === 'chart') drawChart(current(), c)
   else drawWhen(current(), c)
   document.querySelectorAll('#bigRange button').forEach(b => b.classList.toggle('on', +b.dataset.days === days))
@@ -477,7 +667,6 @@ function drawBig() {
 function openBig(which) {
   big = which
   $('bigTitle').textContent = `${current().name} · ${BIG_TITLE[which]}`
-  $('bigHint').textContent = which === 'when' ? 'Tap a dot to see that set' : ''
   $('big').classList.add('show')
   document.body.style.overflow = 'hidden'
   try { $('big').requestFullscreen?.().then(() => screen.orientation?.lock?.('landscape')).catch(() => {}) } catch {}
@@ -488,26 +677,17 @@ function closeBig() {
   $('big').classList.remove('show')
   document.body.style.overflow = ''
   try { if (document.fullscreenElement) document.exitFullscreen() } catch {}
+  render()
 }
-$('chart').addEventListener('click', () => openBig('chart'))
-$('when').addEventListener('click', () => openBig('when'))
+$('chart').addEventListener('click', e => tapGraph($('chart'), 'chart', e))
+$('when').addEventListener('click', e => tapGraph($('when'), 'when', e))
+$('bigCanvas').addEventListener('click', e => { if (big) tapGraph($('bigCanvas'), big, e) })
+document.querySelectorAll('[data-big]').forEach(b => { b.onclick = () => openBig(b.dataset.big) })
 $('bigClose').onclick = closeBig
 document.addEventListener('fullscreenchange', () => { if (!document.fullscreenElement && big) requestAnimationFrame(drawBig) })
 $('bigRange').addEventListener('click', e => {
   const b = e.target.closest('button')
   if (b) { days = +b.dataset.days; render(); drawBig() }
-})
-$('bigCanvas').addEventListener('click', e => {
-  const c = $('bigCanvas')
-  if (big !== 'when' || !c.dots) return
-  const r = c.getBoundingClientRect()
-  const x = e.clientX - r.left, y = e.clientY - r.top
-  let best = null, dist = 30
-  for (const d of c.dots) { const dd = Math.hypot(d.x - x, d.y - y); if (dd < dist) { dist = dd; best = d } }
-  if (best) {
-    const when = new Date(best.s.t).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' })
-    toast(`${when}, ${clock(best.s.t)} · ${fmt(best.s.n)} ${current().unit}`)
-  }
 })
 
 function escape(s) { return s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])) }
@@ -525,6 +705,7 @@ $('tabs').addEventListener('click', e => {
   const b = e.target.closest('button')
   if (!b) return
   data.current = b.dataset.id
+  picked.chart = picked.when = null
   $('amount').value = current().step * 2
   store(); render()
 })
