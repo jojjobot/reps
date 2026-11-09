@@ -21,50 +21,136 @@
     --hot: #e94560;
     --good: #39ff88;
     --gold: #ffd166;
+    --nav: 68px;
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { margin: 0; background: var(--bg); color: var(--text); }
   body {
     font: 16px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-    padding: max(16px, env(safe-area-inset-top)) 16px calc(24px + env(safe-area-inset-bottom));
+    padding: max(16px, env(safe-area-inset-top)) 16px calc(var(--nav) + 28px + env(safe-area-inset-bottom));
     max-width: 520px; margin: 0 auto;
   }
+  button { font: inherit; color: inherit; }
+  [hidden] { display: none !important; }
   header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 14px; }
   h1 { margin: 0; font-size: 28px; letter-spacing: 0.04em; }
   h1 span { color: var(--accent); }
   .date { color: var(--dim); font-size: 14px; }
-  .streak {
-    display: flex; gap: 10px; align-items: center; background: var(--card); border: 1px solid var(--line);
-    border-radius: 14px; padding: 12px 14px; margin-bottom: 14px;
-  }
-  .streak b { font-size: 26px; color: var(--gold); font-variant-numeric: tabular-nums; }
-  .streak small { color: var(--dim); display: block; }
+  .label { color: var(--dim); font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; }
+  .section-label { margin: 18px 2px 8px; display: flex; justify-content: space-between; align-items: baseline; }
+  .section-label a { color: var(--accent); text-transform: none; letter-spacing: 0; font-size: 14px; cursor: pointer; }
 
+  /* ---------- bottom navigation ---------- */
+  .nav {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 8;
+    background: rgba(15, 15, 30, 0.92); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom);
+  }
+  .nav-in { max-width: 520px; margin: 0 auto; display: flex; height: var(--nav); }
+  .nav button {
+    flex: 1; border: 0; background: none; color: var(--dim); display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 3px; font-size: 12px; font-weight: 600; cursor: pointer;
+  }
+  .nav svg { width: 24px; height: 24px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .nav button.on { color: var(--accent); }
+
+  /* ---------- home ---------- */
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 16px; margin-bottom: 14px; }
+  .week-card { padding: 14px 16px; }
+  .streak-row { display: flex; align-items: center; gap: 10px; }
+  .streak-row b { font-size: 30px; color: var(--gold); font-variant-numeric: tabular-nums; line-height: 1; }
+  .streak-row small { color: var(--dim); }
+  .streak-row .today-sets { margin-left: auto; text-align: right; }
+  .streak-row .today-sets b { color: var(--text); font-size: 22px; }
+  .days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-top: 14px; text-align: center; }
+  .day small { display: block; color: var(--dim); font-size: 11px; margin-bottom: 4px; }
+  .day i {
+    display: grid; place-items: center; margin: 0 auto; width: 34px; height: 34px; border-radius: 50%;
+    background: var(--card2); font-style: normal; font-size: 12px; font-weight: 700; color: var(--dim);
+  }
+  .day.did i { background: var(--accent); color: #001018; }
+  .day.now i { box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent); }
+
+  .quick { display: flex; gap: 10px; overflow-x: auto; scrollbar-width: none; margin: 0 -16px; padding: 2px 16px 4px; }
+  .quick::-webkit-scrollbar { display: none; }
+  .qs {
+    flex: none; width: 210px; text-align: left; border: 1px solid var(--line); border-radius: 18px; padding: 14px;
+    background: linear-gradient(145deg, #13324a, var(--card) 70%); cursor: pointer; position: relative;
+  }
+  .qs b { display: block; font-size: 18px; padding-right: 40px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .qs small { display: block; color: var(--dim); font-size: 13px; margin-top: 4px; }
+  .qs .play {
+    position: absolute; top: 12px; right: 12px; width: 36px; height: 36px; border-radius: 50%;
+    background: var(--accent); color: #001018; display: grid; place-items: center; font-size: 15px;
+  }
+  .qs.live { background: linear-gradient(145deg, #0f4a2c, var(--card) 70%); border-color: var(--good); }
+  .qs.live .play { background: var(--good); }
+  .qs.new { background: var(--card); border-style: dashed; color: var(--dim); }
+  .qs.new b { color: var(--accent); }
+
+  .ov { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .ov-card {
+    text-align: left; background: var(--card); border: 1px solid var(--line); border-radius: 16px;
+    padding: 12px; cursor: pointer; min-width: 0;
+  }
+  .ov-card:active { transform: scale(0.98); }
+  .ov-top { display: flex; justify-content: space-between; align-items: center; gap: 6px; }
+  .ov-name { font-weight: 700; font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .trend { flex: none; font-size: 12px; font-weight: 700; border-radius: 999px; padding: 2px 7px; background: var(--card2); color: var(--dim); }
+  .trend.up { color: var(--good); background: rgba(57, 255, 136, 0.12); }
+  .trend.down { color: var(--hot); background: rgba(233, 69, 96, 0.13); }
+  .ov-num { margin-top: 6px; font-size: 28px; font-weight: 800; line-height: 1.1; font-variant-numeric: tabular-nums; }
+  .ov-num small { font-size: 13px; color: var(--dim); font-weight: 600; margin-left: 4px; }
+  .ov-card svg { display: block; width: 100%; height: 30px; margin: 8px 0 6px; }
+  .ov-foot { color: var(--dim); font-size: 12px; font-variant-numeric: tabular-nums; }
+  .ov-foot b { color: var(--gold); font-weight: 700; }
+
+  /* ---------- workouts ---------- */
+  .big-btn {
+    width: 100%; border: 0; border-radius: 14px; padding: 16px; font-size: 18px; font-weight: 800;
+    letter-spacing: 0.04em; background: var(--accent); color: #001018; cursor: pointer;
+  }
+  .big-btn:active, .step:active, .chip:active { transform: scale(0.97); }
+  .ghost {
+    width: 100%; border: 1px dashed var(--line); border-radius: 14px; padding: 13px; background: transparent;
+    color: var(--accent); font-weight: 700; cursor: pointer;
+  }
+  .wk { padding: 0; overflow: hidden; }
+  .wk-head { padding: 14px 16px 10px; display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+  .wk-head b { font-size: 19px; }
+  .wk-head small { color: var(--dim); font-size: 12px; text-align: right; }
+  .wk-items { list-style: none; margin: 0; padding: 0 16px; }
+  .wk-items li { display: flex; justify-content: space-between; padding: 7px 0; border-top: 1px solid var(--line); font-size: 15px; font-variant-numeric: tabular-nums; }
+  .wk-items li span:last-child { color: var(--dim); }
+  .wk-btns { display: flex; gap: 8px; padding: 12px 16px 14px; }
+  .wk-btns button { border-radius: 12px; padding: 12px; font-weight: 800; cursor: pointer; }
+  .wk-btns .go { flex: 1; border: 0; background: var(--accent); color: #001018; }
+  .wk-btns .edit { border: 1px solid var(--line); background: var(--card2); padding: 12px 18px; }
+  .empty-card { text-align: center; color: var(--dim); padding: 26px 18px; }
+  .empty-card b { display: block; color: var(--text); font-size: 18px; margin-bottom: 6px; }
+
+  /* ---------- exercise page (the old app) ---------- */
   .tabs { position: relative; display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 14px; scrollbar-width: none; }
   .tabs::-webkit-scrollbar { display: none; }
   .tab {
     flex: none; border: 1px solid var(--line); background: var(--card); color: var(--text);
-    border-radius: 999px; padding: 9px 16px; font: inherit; font-size: 15px; cursor: pointer;
+    border-radius: 999px; padding: 9px 16px; font-size: 15px; cursor: pointer;
   }
   .tab.on { background: var(--accent); color: #001018; border-color: var(--accent); font-weight: 700; }
   .newex { display: flex; gap: 8px; margin-bottom: 12px; }
-  .newex input {
+  .field, .newex input {
     flex: 1; min-width: 0; font: inherit; font-size: 16px; color: var(--text); background: var(--card);
     border: 1px dashed var(--line); border-radius: 12px; padding: 11px 14px;
   }
-  .newex input:focus { outline: 2px solid var(--accent); border-color: transparent; }
+  .field:focus, .newex input:focus { outline: 2px solid var(--accent); border-color: transparent; }
   .newex button {
-    border: 0; border-radius: 12px; padding: 0 18px; font: inherit; font-weight: 800;
+    border: 0; border-radius: 12px; padding: 0 18px; font-weight: 800;
     background: var(--card2); color: var(--accent); cursor: pointer;
   }
-
-  .card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 16px; margin-bottom: 14px; }
-  .label { color: var(--dim); font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; }
   .today-total { font-size: 64px; font-weight: 800; line-height: 1; margin: 6px 0 2px; font-variant-numeric: tabular-nums; }
   .today-total small { font-size: 18px; color: var(--dim); font-weight: 600; margin-left: 6px; }
   .hint { color: var(--dim); font-size: 14px; min-height: 20px; }
   .hint.win { color: var(--good); }
-
   .entry { display: flex; gap: 8px; margin-top: 14px; }
   .step {
     width: 52px; flex: none; border: 1px solid var(--line); background: var(--card2); color: var(--text);
@@ -75,17 +161,14 @@
     background: var(--bg); color: var(--text); border: 1px solid var(--line); border-radius: 12px; padding: 10px 0;
   }
   .entry input:focus { outline: 2px solid var(--accent); border-color: transparent; }
-  .save {
-    width: 100%; margin-top: 10px; border: 0; border-radius: 14px; padding: 16px; font: inherit; font-size: 18px;
-    font-weight: 800; letter-spacing: 0.04em; background: var(--accent); color: #001018; cursor: pointer;
-  }
-  .save:active, .step:active { transform: scale(0.97); }
+  .save { margin-top: 10px; }
   .sets { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
   .set {
     background: var(--card2); border: 1px solid var(--line); border-radius: 999px; padding: 4px 10px;
     font-size: 14px; color: var(--text); cursor: pointer; font-variant-numeric: tabular-nums;
   }
   .set::after { content: " ×"; color: var(--dim); }
+  .set em { font-style: normal; color: var(--dim); }
 
   .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 14px; }
   .stat { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 10px; text-align: center; }
@@ -97,7 +180,7 @@
   .range { display: flex; gap: 4px; }
   .range button {
     border: 1px solid var(--line); background: transparent; color: var(--dim); border-radius: 8px;
-    padding: 4px 9px; font: inherit; font-size: 13px; cursor: pointer;
+    padding: 4px 9px; font-size: 13px; cursor: pointer;
   }
   .range button.on { color: var(--text); border-color: var(--accent); }
   canvas { width: 100%; height: 190px; display: block; }
@@ -120,27 +203,12 @@
   .usual-best b { color: var(--gold); }
   .big .usual-box { max-height: 32vh; overflow: auto; }
   @media (orientation: landscape) and (max-height: 520px) { .big .usual-box { display: none; } }
-
-  .big {
-    position: fixed; inset: 0; z-index: 10; background: var(--bg); display: none; flex-direction: column;
-    padding: max(12px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right))
-             max(12px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
-  }
-  .big.show { display: flex; }
-  .big-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-  .big-close {
-    width: 44px; height: 44px; border-radius: 12px; border: 1px solid var(--line); background: var(--card);
-    color: var(--text); font-size: 20px; cursor: pointer;
-  }
-  .big .range { align-items: center; margin-bottom: 10px; }
-  .big canvas { flex: 1; height: auto; min-height: 0; }
   .legend { display: flex; gap: 14px; color: var(--dim); font-size: 12px; margin-top: 6px; }
   .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
 
   .history { list-style: none; margin: 0; padding: 0; }
   .history li { display: flex; flex-wrap: wrap; justify-content: space-between; padding: 9px 0; border-bottom: 1px solid var(--line); font-variant-numeric: tabular-nums; }
   .history .times { flex-basis: 100%; color: var(--dim); font-size: 12px; margin-top: 2px; }
-  .set em { font-style: normal; color: var(--dim); }
   .history li:last-child { border: 0; }
   .history .d { color: var(--dim); }
   .history .pb { color: var(--gold); font-size: 12px; margin-left: 6px; }
@@ -149,12 +217,86 @@
   .tools { display: flex; gap: 8px; flex-wrap: wrap; }
   .tools button {
     flex: 1; border: 1px solid var(--line); background: var(--card2); color: var(--text); border-radius: 12px;
-    padding: 11px; font: inherit; font-size: 14px; cursor: pointer;
+    padding: 11px; font-size: 14px; cursor: pointer;
   }
   .tools button.danger { color: var(--hot); }
 
+  /* ---------- full-screen layers: graph, workout editor, workout in progress ---------- */
+  .big, .sheet {
+    position: fixed; inset: 0; z-index: 10; background: var(--bg); display: none; flex-direction: column;
+    padding: max(12px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right))
+             max(12px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+  }
+  .big.show, .sheet.show { display: flex; }
+  .sheet > * { width: 100%; max-width: 520px; margin-left: auto; margin-right: auto; }
+  .big-head, .sheet-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .big-close {
+    flex: none; width: 44px; height: 44px; border-radius: 12px; border: 1px solid var(--line); background: var(--card);
+    color: var(--text); font-size: 20px; cursor: pointer;
+  }
+  .big .range { align-items: center; margin-bottom: 10px; }
+  .big canvas { flex: 1; height: auto; min-height: 0; }
+  .sheet-body { flex: 1; overflow-y: auto; min-height: 0; padding-bottom: 12px; }
+  .sheet-foot { display: flex; gap: 8px; padding-top: 10px; border-top: 1px solid var(--line); }
+  .sheet-foot .big-btn { flex: 1; }
+  .sheet-foot .side {
+    flex: none; border: 1px solid var(--line); background: var(--card2); border-radius: 14px; padding: 0 16px;
+    font-weight: 700; cursor: pointer;
+  }
+  .sheet-foot .side.danger { color: var(--hot); }
+  .sheet-title { font-size: 22px; font-weight: 800; }
+
+  .ed-row { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 10px; margin-top: 10px; }
+  .ed-top { display: flex; gap: 8px; }
+  .ed-top select {
+    flex: 1; min-width: 0; font: inherit; font-weight: 700; color: var(--text); background: var(--card2);
+    border: 1px solid var(--line); border-radius: 10px; padding: 9px 10px;
+  }
+  .ed-top button { flex: none; width: 40px; border: 1px solid var(--line); background: transparent; border-radius: 10px; color: var(--hot); font-size: 18px; cursor: pointer; }
+  .ed-nums { display: flex; align-items: center; gap: 8px; margin-top: 8px; color: var(--dim); font-size: 14px; }
+  .ed-nums input {
+    width: 66px; text-align: center; font: inherit; font-size: 18px; font-weight: 700; color: var(--text);
+    background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 7px 0;
+  }
+  .ed-add { display: flex; gap: 8px; margin-top: 12px; }
+  .ed-add button { flex: none; border: 0; border-radius: 12px; padding: 0 16px; font-weight: 800; background: var(--card2); color: var(--accent); cursor: pointer; }
+  .ed-note { color: var(--dim); font-size: 13px; margin: 6px 2px 0; }
+  .link-btn { border: 0; background: none; color: var(--accent); padding: 12px 2px; font-size: 14px; cursor: pointer; }
+
+  .ses-clock { text-align: right; font-variant-numeric: tabular-nums; }
+  .ses-clock b { font-size: 24px; display: block; line-height: 1.1; }
+  .ses-clock small { color: var(--dim); font-size: 13px; }
+  .ses-clock small.resting { color: var(--gold); }
+  .bar { height: 6px; background: var(--card2); border-radius: 999px; overflow: hidden; margin: 6px 0 4px; }
+  .bar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--accent), var(--good)); transition: width 0.3s; }
+  .bar-text { color: var(--dim); font-size: 13px; margin-bottom: 8px; }
+  .ses-item { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 12px 14px; margin-top: 10px; }
+  .ses-item.complete { border-color: rgba(57, 255, 136, 0.45); }
+  .ses-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  .ses-top b { font-size: 18px; }
+  .ses-top small { color: var(--dim); font-variant-numeric: tabular-nums; }
+  .ses-item.complete .ses-top small { color: var(--good); }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .chip {
+    min-width: 58px; height: 48px; border-radius: 12px; border: 1px solid var(--line); background: var(--card2);
+    font-size: 18px; font-weight: 800; cursor: pointer; font-variant-numeric: tabular-nums; padding: 0 10px;
+  }
+  .chip.done { background: var(--good); color: #002010; border-color: var(--good); }
+  .chip.next { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(0, 229, 255, 0.35); animation: pulse 1.6s infinite; }
+  .chip.more { min-width: 48px; border-style: dashed; color: var(--dim); font-weight: 600; }
+  @keyframes pulse { 50% { box-shadow: 0 0 0 5px rgba(0, 229, 255, 0.12); } }
+  .ses-adj { display: flex; align-items: center; gap: 10px; margin-top: 10px; color: var(--dim); font-size: 14px; }
+  .ses-adj button { width: 38px; height: 34px; border-radius: 10px; border: 1px solid var(--line); background: transparent; font-size: 18px; cursor: pointer; }
+  .ses-adj b { color: var(--text); font-variant-numeric: tabular-nums; }
+
+  .live-pill {
+    position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(var(--nav) + 10px + env(safe-area-inset-bottom));
+    z-index: 9; border: 0; border-radius: 999px; background: var(--good); color: #002010; font-weight: 800;
+    padding: 10px 18px; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5); cursor: pointer; white-space: nowrap;
+  }
+
   .toast {
-    position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom)); transform: translate(-50%, 30px);
+    position: fixed; left: 50%; bottom: calc(var(--nav) + 16px + env(safe-area-inset-bottom)); transform: translate(-50%, 30px);
     background: var(--good); color: #002010; font-weight: 800; padding: 12px 20px; border-radius: 999px;
     opacity: 0; transition: 0.25s; pointer-events: none; white-space: nowrap; z-index: 30;
   }
@@ -167,89 +309,122 @@
   <div class="date" id="date"></div>
 </header>
 
-<div class="streak">
-  <div style="font-size:28px">🔥</div>
-  <div><b id="streak">0</b> <small id="streakText">days in a row</small></div>
-</div>
-
-<form class="newex" id="newEx" autocomplete="off">
-  <input id="exName" type="text" maxlength="24" placeholder="Add your own exercise…" enterkeyhint="done" aria-label="New exercise name">
-  <button type="submit">Add</button>
-</form>
-
-<nav class="tabs" id="tabs"></nav>
-
-<section class="card">
-  <div class="label">Today · <span id="exLabel" style="color:var(--accent)"></span></div>
-  <div class="today-total" id="todayTotal">0</div>
-  <div class="hint" id="hint"></div>
-  <div class="entry">
-    <button class="step" id="minus" aria-label="Less">−</button>
-    <input id="amount" type="number" inputmode="numeric" min="1" value="10" aria-label="Amount">
-    <button class="step" id="plus" aria-label="More">+</button>
-  </div>
-  <button class="save" id="save">ADD</button>
-  <div class="sets" id="sets"></div>
-</section>
-
-<div class="stats">
-  <div class="stat best"><b id="best">0</b><span>best day</span></div>
-  <div class="stat"><b id="week">0</b><span>last 7 days</span></div>
-  <div class="stat"><b id="total">0</b><span>all time</span></div>
-</div>
-
-<section class="card">
-  <div class="chart-head">
-    <div class="label">Progress</div>
-    <div class="head-right">
-      <div class="range" id="range">
-        <button data-days="7">7d</button>
-        <button data-days="30" class="on">30d</button>
-        <button data-days="90">90d</button>
-      </div>
-      <button class="expand-btn" data-big="chart" aria-label="Full screen">⤢</button>
+<!-- ================= HOME: everything at a glance ================= -->
+<section class="view" id="v-home">
+  <div class="card week-card">
+    <div class="streak-row">
+      <div style="font-size:28px">🔥</div>
+      <div><b id="streak">0</b><br><small id="streakText">days in a row</small></div>
+      <div class="today-sets"><b id="todaySets">0</b><br><small>sets today</small></div>
     </div>
+    <div class="days" id="weekDays"></div>
   </div>
-  <canvas id="chart"></canvas>
-  <div class="legend">
-    <span><i style="background:var(--accent)"></i>per day</span>
-    <span><i style="background:var(--gold)"></i>best</span>
-    <span><i style="background:var(--good)"></i>7-day average</span>
-  </div>
-  <div class="pick" id="chartPick"></div>
+
+  <div class="label section-label">Start a workout <a data-go="workouts">All workouts</a></div>
+  <div class="quick" id="quick"></div>
+
+  <div class="label section-label">Your exercises <span style="text-transform:none;letter-spacing:0">this week vs last</span></div>
+  <div class="ov" id="overview"></div>
 </section>
 
-<section class="card">
-  <div class="chart-head">
-    <div class="label">When you train</div>
-    <button class="expand-btn" data-big="when" aria-label="Full screen">⤢</button>
-  </div>
-  <canvas id="when"></canvas>
-  <div class="legend">
-    <span><i style="background:#ffb347;border-radius:50%"></i>morning</span>
-    <span><i style="background:#00e5ff;border-radius:50%"></i>afternoon</span>
-    <span><i style="background:#b388ff;border-radius:50%"></i>evening</span>
-  </div>
-  <div class="legend">Bigger dot = more reps · dashed line = your average time</div>
-  <div class="pick" id="whenPick"></div>
-  <div class="usual-box" id="whenSummary"></div>
+<!-- ================= WORKOUTS ================= -->
+<section class="view" id="v-workouts" hidden>
+  <button class="big-btn" id="newWorkout" style="margin-bottom:14px">+ NEW WORKOUT</button>
+  <div id="workoutList"></div>
 </section>
 
-<section class="card">
-  <div class="label" style="margin-bottom:6px">History</div>
-  <ul class="history" id="history"></ul>
-</section>
+<!-- ================= ONE EXERCISE (log single sets, graphs, history) ================= -->
+<section class="view" id="v-log" hidden>
+  <form class="newex" id="newEx" autocomplete="off">
+    <input id="exName" type="text" maxlength="24" placeholder="Add your own exercise…" enterkeyhint="done" aria-label="New exercise name">
+    <button type="submit">Add</button>
+  </form>
 
-<section class="card">
-  <div class="label" style="margin-bottom:10px">Your data</div>
-  <div class="tools">
-    <button id="export">Save backup</button>
-    <button id="import">Load backup</button>
-    <button id="remove" class="danger">Remove exercise</button>
+  <nav class="tabs" id="tabs"></nav>
+
+  <section class="card">
+    <div class="label">Today · <span id="exLabel" style="color:var(--accent)"></span></div>
+    <div class="today-total" id="todayTotal">0</div>
+    <div class="hint" id="hint"></div>
+    <div class="entry">
+      <button class="step" id="minus" aria-label="Less">−</button>
+      <input id="amount" type="number" inputmode="numeric" min="1" value="10" aria-label="Amount">
+      <button class="step" id="plus" aria-label="More">+</button>
+    </div>
+    <button class="big-btn save" id="save">ADD</button>
+    <div class="sets" id="sets"></div>
+  </section>
+
+  <div class="stats">
+    <div class="stat best"><b id="best">0</b><span>best day</span></div>
+    <div class="stat"><b id="week">0</b><span>last 7 days</span></div>
+    <div class="stat"><b id="total">0</b><span>all time</span></div>
   </div>
-  <input type="file" id="file" accept="application/json" hidden>
+
+  <section class="card">
+    <div class="chart-head">
+      <div class="label">Progress</div>
+      <div class="head-right">
+        <div class="range" id="range">
+          <button data-days="7">7d</button>
+          <button data-days="30" class="on">30d</button>
+          <button data-days="90">90d</button>
+        </div>
+        <button class="expand-btn" data-big="chart" aria-label="Full screen">⤢</button>
+      </div>
+    </div>
+    <canvas id="chart"></canvas>
+    <div class="legend">
+      <span><i style="background:var(--accent)"></i>per day</span>
+      <span><i style="background:var(--gold)"></i>best</span>
+      <span><i style="background:var(--good)"></i>7-day average</span>
+    </div>
+    <div class="pick" id="chartPick"></div>
+  </section>
+
+  <section class="card">
+    <div class="chart-head">
+      <div class="label">When you train</div>
+      <button class="expand-btn" data-big="when" aria-label="Full screen">⤢</button>
+    </div>
+    <canvas id="when"></canvas>
+    <div class="legend">
+      <span><i style="background:#ffb347;border-radius:50%"></i>morning</span>
+      <span><i style="background:#00e5ff;border-radius:50%"></i>afternoon</span>
+      <span><i style="background:#b388ff;border-radius:50%"></i>evening</span>
+    </div>
+    <div class="legend">Bigger dot = more reps · dashed line = your average time</div>
+    <div class="pick" id="whenPick"></div>
+    <div class="usual-box" id="whenSummary"></div>
+  </section>
+
+  <section class="card">
+    <div class="label" style="margin-bottom:6px">History</div>
+    <ul class="history" id="history"></ul>
+  </section>
+
+  <section class="card">
+    <div class="label" style="margin-bottom:10px">Your data</div>
+    <div class="tools">
+      <button id="export">Save backup</button>
+      <button id="import">Load backup</button>
+      <button id="remove" class="danger">Remove exercise</button>
+    </div>
+    <input type="file" id="file" accept="application/json" hidden>
+  </section>
 </section>
 
+<nav class="nav" id="nav">
+  <div class="nav-in">
+    <button data-go="home"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></svg>Home</button>
+    <button data-go="workouts"><svg viewBox="0 0 24 24"><path d="M6 8v8M18 8v8M3 10v4M21 10v4M6 12h12"/></svg>Workouts</button>
+    <button data-go="log"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Exercises</button>
+  </div>
+</nav>
+
+<button class="live-pill" id="livePill" hidden></button>
+
+<!-- Full-screen graph -->
 <div class="big" id="big">
   <div class="big-head">
     <div class="label" id="bigTitle"></div>
@@ -263,6 +438,47 @@
   <canvas id="bigCanvas"></canvas>
   <div class="pick" id="bigPick"></div>
   <div class="usual-box" id="bigSummary"></div>
+</div>
+
+<!-- Make / change a workout -->
+<div class="sheet" id="editor">
+  <div class="sheet-head">
+    <div class="sheet-title" id="edTitle">New workout</div>
+    <button class="big-close" id="edClose" aria-label="Close">✕</button>
+  </div>
+  <div class="sheet-body">
+    <input class="field" id="edName" maxlength="30" placeholder="Name it (e.g. Morning, Upper body)" autocomplete="off" style="width:100%">
+    <div id="edRows"></div>
+    <form class="ed-add" id="edAdd" autocomplete="off">
+      <input class="field" id="edNew" maxlength="24" placeholder="New exercise name (optional)" enterkeyhint="done">
+      <button type="submit">+ Add</button>
+    </form>
+    <div class="ed-note">Leave the name empty to pick one you already have.</div>
+    <button class="link-btn" id="edToday" hidden>Fill in from what you did today</button>
+  </div>
+  <div class="sheet-foot">
+    <button class="side danger" id="edDelete">Delete</button>
+    <button class="big-btn" id="edSave">SAVE WORKOUT</button>
+  </div>
+</div>
+
+<!-- A workout in progress -->
+<div class="sheet" id="session">
+  <div class="sheet-head">
+    <button class="big-close" id="sesHide" aria-label="Minimise"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
+    <div style="flex:1;min-width:0">
+      <div class="label">Workout</div>
+      <div class="sheet-title" id="sesName" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></div>
+    </div>
+    <div class="ses-clock"><b id="sesTime">0:00</b><small id="sesRest"></small></div>
+  </div>
+  <div class="bar"><i id="sesBar"></i></div>
+  <div class="bar-text" id="sesBarText"></div>
+  <div class="sheet-body" id="sesList"></div>
+  <div class="sheet-foot">
+    <button class="side" id="sesAll">Log all left</button>
+    <button class="big-btn" id="sesFinish">FINISH</button>
+  </div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -280,15 +496,27 @@ const DEFAULT = {
   ],
   log: {},        // { 'YYYY-MM-DD': { exerciseId: [{ n: amount, t: ms timestamp }, ...] } } (a bare number = an old set with no time)
   current: 'pushups',
+  workouts: [],   // [{ id, name, items: [{ ex: exerciseId, sets: 3, n: 15 }] }]
+  finished: [],   // [{ wid, name, start, end, sets }] - workouts you finished, newest last
+  session: null,  // the workout in progress: { wid, name, start, items: [{ ex, n, sets, done: [timestamp|null, ...] }] }
 }
 
 let data = load()
 let days = 30
+let view = 'home'
+let sessionOpen = true   // false = the workout in progress is minimised to the green pill
 
+// Older saves have no workouts: fill in what is missing, never throw anything away.
+function fix(d) {
+  if (!Array.isArray(d.workouts)) d.workouts = []
+  if (!Array.isArray(d.finished)) d.finished = []
+  if (!d.session || !Array.isArray(d.session.items)) d.session = null
+  return d
+}
 function load() {
   try {
     const saved = JSON.parse(localStorage.getItem(KEY))
-    if (saved && Array.isArray(saved.exercises) && saved.log) return saved
+    if (saved && Array.isArray(saved.exercises) && saved.log) return fix(saved)
   } catch {}
   return structuredClone(DEFAULT)
 }
@@ -305,10 +533,29 @@ const dayKey = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '
 const today = () => dayKey(new Date())
 const shift = (key, n) => { const d = new Date(key + 'T12:00:00'); d.setDate(d.getDate() + n); return dayKey(d) }
 const current = () => data.exercises.find(e => e.id === data.current) || data.exercises[0]
+const exById = id => data.exercises.find(e => e.id === id)
 const setsOn = (key, id) => (data.log[key]?.[id] || []).map(s => typeof s === 'number' ? { n: s, t: null } : s)
 const totalOn = (key, id) => setsOn(key, id).reduce((a, s) => a + s.n, 0)
 const fmt = n => n.toLocaleString()
 const clock = t => new Date(t).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })
+const unitShort = ex => ex.unit === 'sec' ? 's' : ''
+const mmss = ms => { const s = Math.max(0, Math.floor(ms / 1000)); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}` }
+// Every set's time is also its name (tapping a dot, ticking a set off): never give two sets the same one.
+function stamp() { let t = Date.now(); if (t <= (stamp.last || 0)) t = stamp.last + 1; stamp.last = t; return t }
+
+function addSet(exId, n, t = stamp()) {
+  const k = dayKey(new Date(t))
+  data.log[k] ??= {}
+  data.log[k][exId] ??= []
+  data.log[k][exId].push({ n, t })
+  return t
+}
+function findSet(exId, t) {
+  const list = data.log[dayKey(new Date(t))]?.[exId]
+  const i = list ? list.findIndex(s => s && s.t === t) : -1
+  return i < 0 ? null : { list, i, s: list[i] }
+}
+function removeSet(exId, t) { const f = findSet(exId, t); if (f) f.list.splice(f.i, 1) }
 
 function streak() {
   // Days in a row with ANY exercise logged, ending today (or yesterday, so it doesn't break before you train).
@@ -318,15 +565,114 @@ function streak() {
   while (any(k)) { n++; k = shift(k, -1) }
   return n
 }
+const setsCountOn = k => Object.values(data.log[k] || {}).reduce((a, l) => a + l.length, 0)
 
+// ======================= drawing the pages =======================
 function render() {
-  const ex = current()
-  const t = today()
   $('date').textContent = new Date().toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'short' })
+  document.querySelectorAll('.view').forEach(el => { el.hidden = el.id !== 'v-' + view })
+  document.querySelectorAll('#nav button').forEach(b => b.classList.toggle('on', b.dataset.go === view))
+  if (view === 'home') renderHome()
+  else if (view === 'workouts') renderWorkouts()
+  else renderLog()
+  renderSession()
+}
+function go(v) { view = v; render(); scrollTo(0, 0) }
 
+// ---------- Home ----------
+function renderHome() {
+  const t = today()
   const s = streak()
   $('streak').textContent = s
   $('streakText').textContent = s === 1 ? 'day in a row' : 'days in a row'
+  $('todaySets').textContent = setsCountOn(t)
+
+  $('weekDays').innerHTML = Array.from({ length: 7 }, (_, i) => {
+    const k = shift(t, i - 6), n = setsCountOn(k)
+    const d = new Date(k + 'T12:00:00').toLocaleDateString(undefined, { weekday: 'narrow' })
+    return `<div class="day ${n ? 'did' : ''} ${k === t ? 'now' : ''}"><small>${d}</small><i>${n || ''}</i></div>`
+  }).join('')
+
+  // Workouts to start with one tap (the one in progress first).
+  let q = ''
+  if (data.session) {
+    const done = sessionDone(), all = sessionTotal()
+    q += `<button class="qs live" data-resume><span class="play">▶</span><b>${escape(data.session.name)}</b>` +
+      `<small>In progress · ${done}/${all} sets</small></button>`
+  }
+  q += data.workouts.filter(w => !data.session || w.id !== data.session.wid).map(w =>
+    `<button class="qs" data-start="${w.id}"><span class="play">▶</span><b>${escape(w.name)}</b>` +
+    `<small>${liveItems(w).length} exercises · ${liveItems(w).reduce((a, i) => a + i.sets, 0)} sets</small>` +
+    `<small>${lastDone(w.id)}</small></button>`).join('')
+  q += `<button class="qs new" data-newworkout><b>+ New workout</b><small>Save your routine once, then log it in a few taps</small></button>`
+  $('quick').innerHTML = q
+
+  // One card per exercise: today, this week against last week, the last 14 days, best day.
+  $('overview').innerHTML = data.exercises.map(ex => {
+    const now = totalOn(t, ex.id)
+    let wk = 0, prev = 0
+    for (let i = 0; i < 7; i++) { wk += totalOn(shift(t, -i), ex.id); prev += totalOn(shift(t, -i - 7), ex.id) }
+    let trend = '<span class="trend">–</span>'
+    if (prev && wk) {
+      const p = Math.round((wk - prev) / prev * 100)
+      trend = `<span class="trend ${p > 0 ? 'up' : p < 0 ? 'down' : ''}">${p > 0 ? '▲' : p < 0 ? '▼' : ''} ${Math.abs(p)}%</span>`
+    } else if (wk) trend = '<span class="trend up">new</span>'
+    else if (prev) trend = '<span class="trend down">▼ 100%</span>'
+
+    const vals = Array.from({ length: 14 }, (_, i) => totalOn(shift(t, i - 13), ex.id))
+    const top = Math.max(1, ...vals)
+    const bars = vals.map((v, i) => v
+      ? `<rect x="${i * 10 + 1}" y="${30 - Math.max(2, v / top * 30)}" width="8" height="${Math.max(2, v / top * 30)}" rx="2" fill="${i === 13 ? 'var(--accent)' : 'rgba(0,229,255,.45)'}"/>`
+      : `<rect x="${i * 10 + 1}" y="28" width="8" height="2" rx="1" fill="var(--line)"/>`).join('')
+
+    const all = Object.keys(data.log).map(k => totalOn(k, ex.id))
+    const best = Math.max(0, ...all)
+    const lastKey = Object.keys(data.log).filter(k => k < t && totalOn(k, ex.id)).sort().pop()
+    const big = now ? `${fmt(now)}<small>today</small>` : `${fmt(wk)}<small>this week</small>`
+    const foot = lastKey && !now ? `last: ${ago(lastKey)} · best <b>${fmt(best)}</b>` : best ? `best day <b>${fmt(best)}</b>` : 'not started yet'
+    return `<button class="ov-card" data-ex="${ex.id}">
+      <div class="ov-top"><span class="ov-name">${escape(ex.name)}</span>${trend}</div>
+      <div class="ov-num">${big}</div>
+      <svg viewBox="0 0 140 30" preserveAspectRatio="none">${bars}</svg>
+      <div class="ov-foot">${foot}</div></button>`
+  }).join('')
+}
+function ago(k) {
+  const n = Math.round((new Date(today() + 'T12:00:00') - new Date(k + 'T12:00:00')) / 864e5)
+  return n === 1 ? 'yesterday' : n < 7 ? `${n} days ago` : new Date(k + 'T12:00:00').toLocaleDateString(undefined, { day: 'numeric', month: 'short' })
+}
+function lastDone(wid) {
+  const f = data.finished.filter(f => f.wid === wid).pop()
+  if (!f) return 'Not done yet'
+  const k = dayKey(new Date(f.start))
+  return `Last: ${k === today() ? 'today' : ago(k)} · ${Math.max(1, Math.round((f.end - f.start) / 60000))} min`
+}
+const liveItems = w => w.items.filter(i => exById(i.ex))
+
+// ---------- Workouts ----------
+function renderWorkouts() {
+  if (!data.workouts.length) {
+    $('workoutList').innerHTML = `<div class="card empty-card"><b>No workouts yet</b>
+      Put your routine together once (e.g. 3 × 15 push-ups, 3 × 20 squats, 2 × 60 s plank).
+      Then start it and tick each set off with one tap – or log the whole thing at once.</div>`
+    return
+  }
+  $('workoutList').innerHTML = data.workouts.map(w => `
+    <section class="card wk">
+      <div class="wk-head"><b>${escape(w.name)}</b><small>${lastDone(w.id)}</small></div>
+      <ul class="wk-items">${liveItems(w).map(i => { const ex = exById(i.ex)
+        return `<li><span>${escape(ex.name)}</span><span>${i.sets} × ${fmt(i.n)}${unitShort(ex)}</span></li>` }).join('')}</ul>
+      <div class="wk-btns">
+        <button class="go" data-start="${w.id}">${data.session?.wid === w.id ? '▶ CONTINUE' : '▶ START'}</button>
+        <button class="edit" data-edit="${w.id}">Edit</button>
+      </div>
+    </section>`).join('')
+}
+
+// ---------- One exercise ----------
+function renderLog() {
+  const ex = current()
+  const t = today()
 
   $('tabs').innerHTML = data.exercises.map(e =>
     `<button class="tab ${e.id === ex.id ? 'on' : ''}" data-id="${e.id}">${escape(e.name)}</button>`).join('')
@@ -382,6 +728,7 @@ function render() {
 function drawChart(ex, c = $('chart')) {
   const dpr = window.devicePixelRatio || 1
   const w = c.clientWidth, h = c.clientHeight
+  if (!w) return   // its page is not showing
   c.width = w * dpr; c.height = h * dpr
   const g = c.getContext('2d')
   g.scale(dpr, dpr)
@@ -485,6 +832,7 @@ function trainingTimes(sets) {
 function drawWhen(ex, c = $('when')) {
   const dpr = window.devicePixelRatio || 1
   const w = c.clientWidth, h = c.clientHeight
+  if (!w) return   // its page is not showing
   c.width = w * dpr; c.height = h * dpr
   const g = c.getContext('2d')
   g.scale(dpr, dpr)
@@ -650,7 +998,7 @@ function tapGraph(c, which, e) {
   render(); drawBig()
 }
 
-// --- Full screen: the ⤢ button (turn the phone sideways for more room) ---
+// --- Full screen: the ⤢ buttons (turn the phone sideways for more room) ---
 let big = null   // 'chart' | 'when' | null
 const BIG_TITLE = { chart: 'Progress', when: 'When you train' }
 
@@ -690,7 +1038,213 @@ $('bigRange').addEventListener('click', e => {
   if (b) { days = +b.dataset.days; render(); drawBig() }
 })
 
-function escape(s) { return s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])) }
+// ======================= workouts: make, change, delete =======================
+let draft = null   // the workout being edited: { id|null, name, items: [{ ex, sets, n }] }
+
+function openEditor(w) {
+  draft = w ? structuredClone({ ...w, items: liveItems(w) }) : { id: null, name: '', items: [] }
+  if (!w && !draft.items.length) draft.items.push(newItem())
+  $('edTitle').textContent = w ? 'Edit workout' : 'New workout'
+  $('edName').value = draft.name
+  $('edDelete').hidden = !w
+  $('edToday').hidden = !Object.keys(data.log[today()] || {}).some(id => totalOn(today(), id) && exById(id))
+  drawRows()
+  $('editor').classList.add('show')
+  document.body.style.overflow = 'hidden'
+}
+function closeEditor() { draft = null; $('editor').classList.remove('show'); document.body.style.overflow = ''; render() }
+function newItem(exId) {
+  const used = new Set(draft?.items.map(i => i.ex))
+  const ex = exById(exId) || data.exercises.find(e => !used.has(e.id)) || data.exercises[0]
+  return { ex: ex.id, sets: 3, n: ex.unit === 'sec' ? 30 : ex.step * 2 }
+}
+function drawRows() {
+  $('edRows').innerHTML = draft.items.map((it, i) => {
+    const ex = exById(it.ex)
+    return `<div class="ed-row" data-i="${i}">
+      <div class="ed-top">
+        <select data-f="ex" aria-label="Exercise">${data.exercises.map(e =>
+          `<option value="${e.id}" ${e.id === it.ex ? 'selected' : ''}>${escape(e.name)}</option>`).join('')}</select>
+        <button data-del aria-label="Take out">✕</button>
+      </div>
+      <div class="ed-nums">
+        <input data-f="sets" type="number" inputmode="numeric" min="1" max="20" value="${it.sets}" aria-label="Sets"> sets of
+        <input data-f="n" type="number" inputmode="numeric" min="1" value="${it.n}" aria-label="Amount"> ${ex.unit === 'sec' ? 'seconds' : 'reps'}
+      </div></div>`
+  }).join('') || '<div class="ed-note" style="margin-top:14px">Add the exercises of this workout below.</div>'
+}
+$('edRows').addEventListener('input', e => {
+  const row = e.target.closest('.ed-row'), f = e.target.dataset.f
+  if (!row || !f) return
+  const it = draft.items[+row.dataset.i]
+  if (f === 'ex') { const ex = exById(e.target.value); it.ex = ex.id; it.n = ex.unit === 'sec' ? 30 : ex.step * 2; drawRows() }
+  else it[f] = Math.max(1, Math.round(+e.target.value || 0))
+})
+$('edRows').addEventListener('click', e => {
+  const row = e.target.closest('.ed-row')
+  if (row && e.target.closest('[data-del]')) { draft.items.splice(+row.dataset.i, 1); drawRows() }
+})
+$('edAdd').addEventListener('submit', e => {
+  e.preventDefault()
+  const name = $('edNew').value.trim()
+  const ex = name ? addExercise(name) : null
+  draft.items.push(newItem(ex?.id))
+  $('edNew').value = ''; $('edNew').blur()
+  drawRows()
+})
+// Today's sets become the plan: one line per exercise, the number of sets you did at their average size.
+$('edToday').onclick = () => {
+  const day = data.log[today()] || {}
+  draft.items = Object.keys(day).filter(id => exById(id) && totalOn(today(), id)).map(id => {
+    const s = setsOn(today(), id)
+    return { ex: id, sets: s.length, n: Math.round(s.reduce((a, x) => a + x.n, 0) / s.length) }
+  })
+  if (!$('edName').value.trim()) $('edName').value = 'My workout'
+  drawRows()
+}
+$('edSave').onclick = () => {
+  const name = $('edName').value.trim().slice(0, 30)
+  if (!name) { $('edName').focus(); toast('Give it a name first'); return }
+  if (!draft.items.length) { toast('Add at least one exercise'); return }
+  data = load()   // another tab may have saved since the editor opened
+  const w = { id: draft.id || 'w' + Date.now(), name, items: draft.items.map(i => ({ ex: i.ex, sets: Math.min(20, i.sets), n: i.n })) }
+  const at = data.workouts.findIndex(x => x.id === w.id)
+  if (at >= 0) data.workouts[at] = w; else data.workouts.push(w)
+  store(); toast(`${name} saved`)
+  closeEditor()
+}
+$('edDelete').onclick = () => {
+  if (!draft?.id || !confirm(`Delete the workout "${draft.name}"? Your logged sets stay.`)) return
+  data.workouts = data.workouts.filter(w => w.id !== draft.id)
+  store(); closeEditor()
+}
+$('edClose').onclick = closeEditor
+
+// ======================= a workout in progress =======================
+// Every set ticked off is a real set in the log straight away (so graphs, streak and history see it);
+// the session only remembers which set it was, to untick it again.
+const sessionTotal = () => data.session ? data.session.items.reduce((a, i) => a + i.sets, 0) : 0
+const isDone = (it, j) => it.done[j] && findSet(it.ex, it.done[j])
+const sessionDone = () => data.session ? data.session.items.reduce((a, it) => a + it.done.filter((t, j) => j < it.sets && isDone(it, j)).length, 0) : 0
+
+function startWorkout(wid) {
+  if (data.session?.wid === wid) { sessionOpen = true; render(); return }
+  if (data.session && !confirm(`Finish "${data.session.name}" and start this one?`)) return
+  if (data.session) finishWorkout(true)
+  const w = data.workouts.find(w => w.id === wid)
+  if (!w || !liveItems(w).length) return
+  data.session = { wid, name: w.name, start: Date.now(), items: liveItems(w).map(i => ({ ex: i.ex, n: i.n, sets: i.sets, done: [] })) }
+  sessionOpen = true
+  store(); render()
+}
+function finishWorkout(quiet) {
+  const s = data.session
+  if (!s) return
+  const n = sessionDone()
+  if (n) {
+    const times = s.items.flatMap(it => it.done.filter((t, j) => isDone(it, j)))
+    data.finished.push({ wid: s.wid, name: s.name, start: s.start, end: Math.max(...times, s.start), sets: n })
+    if (data.finished.length > 500) data.finished.shift()
+  }
+  data.session = null
+  store()
+  if (!quiet) {
+    toast(n ? `Workout done · ${n} sets · ${mmss(Date.now() - s.start)}` : 'Workout closed')
+    if (n && navigator.vibrate) navigator.vibrate([40, 60, 40])
+    render()
+  }
+}
+
+function renderSession() {
+  const s = data.session
+  $('livePill').hidden = !s || sessionOpen
+  if (s) $('livePill').textContent = `▶ ${s.name} · ${sessionDone()}/${sessionTotal()} sets`
+  const show = !!s && sessionOpen
+  $('session').classList.toggle('show', show)
+  document.body.style.overflow = show || draft || big ? 'hidden' : ''
+  if (!show) return
+
+  $('sesName').textContent = s.name
+  const done = sessionDone(), all = sessionTotal()
+  $('sesBar').style.width = `${all ? done / all * 100 : 0}%`
+  $('sesBarText').textContent = done === all ? 'All sets done – nice work! Press Finish.' : `${done} of ${all} sets · tap a set when you have done it`
+
+  let nextFound = false
+  $('sesList').innerHTML = s.items.map((it, i) => {
+    const ex = exById(it.ex)
+    if (!ex) return ''
+    let chips = ''
+    let n = 0
+    for (let j = 0; j < it.sets; j++) {
+      const f = isDone(it, j)
+      if (f) { n++; chips += `<button class="chip done" data-i="${i}" data-j="${j}">✓ ${fmt(f.s.n)}${unitShort(ex)}</button>`; continue }
+      const next = !nextFound; nextFound = true
+      chips += `<button class="chip ${next ? 'next' : ''}" data-i="${i}" data-j="${j}">${fmt(it.n)}${unitShort(ex)}</button>`
+    }
+    chips += `<button class="chip more" data-more="${i}" aria-label="One more set">+</button>`
+    const complete = n >= it.sets
+    return `<div class="ses-item ${complete ? 'complete' : ''}">
+      <div class="ses-top"><b>${escape(ex.name)}</b><small>${complete ? '✓ done' : `${n}/${it.sets}`} · today ${fmt(totalOn(today(), ex.id))}</small></div>
+      <div class="chips">${chips}</div>
+      <div class="ses-adj"><button data-adj="-1" data-i="${i}" aria-label="Less">−</button>
+        <span>next sets: <b>${fmt(it.n)}</b> ${ex.unit}</span>
+        <button data-adj="1" data-i="${i}" aria-label="More">+</button></div>
+    </div>`
+  }).join('')
+  tickSession()
+}
+function tickSession() {
+  const s = data.session
+  if (!s || !sessionOpen) return
+  $('sesTime').textContent = mmss(Date.now() - s.start)
+  const times = s.items.flatMap(it => it.done.filter((t, j) => isDone(it, j)))
+  const rest = $('sesRest')
+  if (times.length && sessionDone() < sessionTotal()) { rest.textContent = `rest ${mmss(Date.now() - Math.max(...times))}`; rest.className = 'resting' }
+  else { rest.textContent = 'total time'; rest.className = '' }
+}
+setInterval(tickSession, 1000)
+
+$('sesList').addEventListener('click', e => {
+  const s = data.session
+  const b = e.target.closest('button')
+  if (!s || !b) return
+  const i = +b.dataset.i
+  if (b.dataset.more != null) { s.items[+b.dataset.more].sets++; store(); render(); return }
+  if (b.dataset.adj) {
+    const it = s.items[i], ex = exById(it.ex)
+    it.n = Math.max(1, it.n + +b.dataset.adj * (ex.unit === 'sec' ? 5 : 1))
+    store(); render(); return
+  }
+  if (b.dataset.j == null) return
+  const it = s.items[i], j = +b.dataset.j
+  if (isDone(it, j)) {
+    // Untick: the set leaves the log again. An unticked extra set at the end goes away too.
+    removeSet(it.ex, it.done[j]); it.done[j] = null
+  } else {
+    it.done[j] = addSet(it.ex, it.n)
+    if (navigator.vibrate) navigator.vibrate(25)
+    if (sessionDone() === sessionTotal() && navigator.vibrate) navigator.vibrate([40, 60, 40])
+  }
+  store(); render()
+})
+$('sesAll').onclick = () => {
+  const s = data.session
+  const left = sessionTotal() - sessionDone()
+  if (!left) { toast('Every set is already ticked off'); return }
+  if (!confirm(`Log the ${left} set${left === 1 ? '' : 's'} left as planned?`)) return
+  for (const it of s.items) for (let j = 0; j < it.sets; j++) if (!isDone(it, j)) it.done[j] = addSet(it.ex, it.n)
+  store(); render()
+}
+$('sesFinish').onclick = () => {
+  const left = sessionTotal() - sessionDone()
+  if (left && sessionDone() && !confirm(`${left} set${left === 1 ? '' : 's'} not ticked off. Finish anyway?`)) return
+  finishWorkout()
+}
+$('sesHide').onclick = () => { sessionOpen = false; render() }
+$('livePill').onclick = () => { sessionOpen = true; render() }
+
+// ======================= small helpers + the old buttons =======================
+function escape(s) { return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])) }
 
 function toast(msg) {
   const el = $('toast')
@@ -700,7 +1254,31 @@ function toast(msg) {
   toast.t = setTimeout(() => el.classList.remove('show'), 1600)
 }
 
-// --- Events ---
+// A new exercise from a typed name (or the one you already have by that name).
+// Counted in seconds when the name sounds timed (plank, hold, hang...), otherwise reps.
+function addExercise(name) {
+  name = name.trim().slice(0, 24)
+  const same = data.exercises.find(x => x.name.toLowerCase() === name.toLowerCase())
+  if (same) return same
+  const timed = /plank|hold|hang|wall ?sit|stretch|sec|minute|run|jog|walk/i.test(name)
+  const ex = { id: 'ex' + Date.now(), name, unit: timed ? 'sec' : 'reps', step: timed ? 10 : 5 }
+  data.exercises.push(ex)
+  store()
+  return ex
+}
+
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-go],[data-start],[data-edit],[data-ex],[data-resume],[data-newworkout]')
+  if (!b) return
+  if (b.dataset.go) go(b.dataset.go)
+  else if (b.dataset.start) startWorkout(b.dataset.start)
+  else if (b.dataset.edit) openEditor(data.workouts.find(w => w.id === b.dataset.edit))
+  else if (b.dataset.ex) { data.current = b.dataset.ex; picked.chart = picked.when = null; $('amount').value = current().step * 2; store(); go('log') }
+  else if (b.dataset.resume != null) { sessionOpen = true; render() }
+  else if (b.dataset.newworkout != null) openEditor(null)
+})
+$('newWorkout').onclick = () => openEditor(null)
+
 $('tabs').addEventListener('click', e => {
   const b = e.target.closest('button')
   if (!b) return
@@ -711,22 +1289,14 @@ $('tabs').addEventListener('click', e => {
 })
 
 // Type a name at the top, press Add (or Enter): it becomes a tab and is opened.
-// Counted in seconds when the name sounds timed (plank, hold, hang...), otherwise reps.
 $('newEx').addEventListener('submit', e => {
   e.preventDefault()
   const name = $('exName').value.trim().slice(0, 24)
   if (!name) { $('exName').focus(); return }
-  const same = data.exercises.find(x => x.name.toLowerCase() === name.toLowerCase())
-  if (same) {
-    data.current = same.id
-    toast(`${same.name} is already there`)
-  } else {
-    const timed = /plank|hold|hang|wall ?sit|stretch|sec|minute|run|jog|walk/i.test(name)
-    const id = 'ex' + Date.now()
-    data.exercises.push({ id, name, unit: timed ? 'sec' : 'reps', step: timed ? 10 : 5 })
-    data.current = id
-    toast(`${name} added`)
-  }
+  const had = data.exercises.length
+  const ex = addExercise(name)
+  data.current = ex.id
+  toast(data.exercises.length > had ? `${ex.name} added` : `${ex.name} is already there`)
   $('exName').value = ''
   $('exName').blur()
   $('amount').value = current().step * 2
@@ -739,12 +1309,10 @@ $('plus').onclick = () => { $('amount').value = (+$('amount').value || 0) + curr
 $('save').onclick = () => {
   const n = Math.round(+$('amount').value)
   if (!(n > 0)) { toast('Enter a number first'); return }
-  const t = today(), ex = current()
-  data.log[t] ??= {}
-  data.log[t][ex.id] ??= []
-  data.log[t][ex.id].push({ n, t: Date.now() })
+  const ex = current()
+  addSet(ex.id, n)
   store(); render()
-  toast(`+${fmt(n)} ${ex.unit} · today ${fmt(totalOn(t, ex.id))}`)
+  toast(`+${fmt(n)} ${ex.unit} · today ${fmt(totalOn(today(), ex.id))}`)
   if (navigator.vibrate) navigator.vibrate(30)
 }
 
@@ -778,7 +1346,7 @@ $('file').onchange = async () => {
     const d = JSON.parse(await f.text())
     if (!Array.isArray(d.exercises) || !d.log) throw 0
     if (!confirm('Replace everything on this phone with the backup?')) return
-    data = d; store(); render(); toast('Backup loaded')
+    data = fix(d); store(); render(); toast('Backup loaded')
   } catch { toast('That file is not a Reps backup') }
   $('file').value = ''
 }
@@ -788,12 +1356,14 @@ $('remove').onclick = () => {
   if (!confirm(`Remove "${ex.name}" and all its history?`)) return
   data.exercises = data.exercises.filter(e => e.id !== ex.id)
   for (const k in data.log) delete data.log[k][ex.id]
+  for (const w of data.workouts) w.items = w.items.filter(i => i.ex !== ex.id)
+  if (data.session) data.session.items = data.session.items.filter(i => i.ex !== ex.id)
   data.current = data.exercises[0].id
   store(); render()
 }
 
-addEventListener('resize', () => { drawChart(current()); drawWhen(current()); drawBig() })
-// Midnight rollover while the app stays open.
+addEventListener('resize', () => { if (view === 'log') { drawChart(current()); drawWhen(current()) } drawBig() })
+// Midnight rollover while the app stays open; and another tab may have saved meanwhile.
 document.addEventListener('visibilitychange', () => { if (!document.hidden) { data = load(); render() } })
 
 $('amount').value = current().step * 2
